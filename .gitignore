@@ -1,0 +1,7 @@
+
+*.exe
+/Ungrabber/__pycache__
+/Ungrabber/methods/__pycache__
+/Ungrabber/__pycache__
+/Ungrabber/__pycache__
+*.pyc
