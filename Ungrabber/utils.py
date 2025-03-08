@@ -245,7 +245,7 @@ def findLZMA(content: bytes) -> bytes:
   """
   return lzma.decompress(LZMASign + content.split(LZMASign)[-1])
 
-def loadPyc(pyc: bytes, pymin: int) -> tuple[xdis.codetype.CodeBase, tuple[int,int], bool, ModuleType]:
+def loadPyc(pyc: bytes, pymin: int) -> tuple[xdis.Code3, tuple[int,int], bool, ModuleType]:
   """
   Load Pyc With Header Or Not
 

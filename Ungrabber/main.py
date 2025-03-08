@@ -16,4 +16,5 @@ def decompile(FileName: str) -> str:
   with open(FileName, 'rb') as fp:
     content = fp.read()
     stub = Stub(FileName = FileName, FileContent = content, FileSize = len(content), fp = fp, isExe = True)
+    print(stub.getType())
     return getMethod(stub.getType())(stub)

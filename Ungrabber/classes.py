@@ -1,7 +1,8 @@
 from .extract import (
-  Extract
+  extract
 )
 from typing import *
+import io
 
 class Stub:
   def __init__(self, FileName: str, FileContent: dict, FileSize: int, fp, gtype: str = '', fstruct: dict = {}, header: bytes = b'', isExe: bool = False) -> None:
@@ -13,6 +14,7 @@ class Stub:
     self.header: bytes = header
     self.type: str = None
     self.isExe: bool = isExe
+    self.version: tuple[int, int]
     self.fp = fp
     
   def generateStruct(self) -> None:
@@ -21,7 +23,8 @@ class Stub:
       self.struct[self.name] = self.content
       return
     
-    self.struct, self.pymin = Extract(self.content)
+    self.struct, self.version = extract(io.BytesIO(self.content))
+    self.pymin = self.version[1]
     
   def getType(self) -> str:
     
@@ -34,7 +37,8 @@ class Stub:
     self.type = 'BlankGrabber' if 'blank.aes' in self.struct else \
                 'LunaGrabberV2' if 'luna.aes' in self.struct or 'bound.luna' in self.struct else \
                 'CrealGrabber' if 'Creal' in self.struct or 'creal' in self.struct else \
-                'LunaGrabber' if 'main-o' in self.struct else None
+                'LunaGrabber' if 'main-o' in self.struct else \
+                'Pysilon' if 'source_prepared' in self.struct else None
 
     if self.type:
       return self.type
