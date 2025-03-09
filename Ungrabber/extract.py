@@ -59,14 +59,20 @@ class PyinstEntry:
       struct.unpack('!I', fp.read(4))[0],
       struct.unpack('c', fp.read(1))[0],
       struct.unpack('c', fp.read(1))[0],
-      fp.read(nameSize).replace(b'\x00', b'').decode()
+      ''
     )
+    
+    try:
+      entry.name = fp.read(nameSize).replace(b'\x00', b'').decode()
+    except:
+      entry.name = 'InvalidName'
+    
 
     return entry
 
 def getHeaderOffset(fp: io.BufferedReader):
   content = fp.read()
-  pyInstHeader = content.find(pyinstHeaderSign)
+  pyInstHeader = content.rfind(pyinstHeaderSign)
   
   return pyInstHeader
 
@@ -83,6 +89,7 @@ def processEntry(fp: io.BufferedReader, entry: PyinstEntry):
   return zlib.decompress(content)
 
 def extract(fp: io.BufferedReader) -> tuple[dict, tuple[int, int]]:
+    fp.seek(0, os.SEEK_SET)
     headerOffset = getHeaderOffset(fp)
     
     filesize = fp.seek(0, os.SEEK_END)
@@ -91,11 +98,15 @@ def extract(fp: io.BufferedReader) -> tuple[dict, tuple[int, int]]:
     
     # Extract The Pyinstaller Header
     pyInstHeader = PyinstHeader.parse(fp, headerOffset)
+    
+    currPos = fp.tell()
+    addBytes = fp.seek(0, os.SEEK_END) - currPos - 64
+
 
     version = (pyInstHeader.PythonVersion//100, pyInstHeader.PythonVersion % 100)
-    
+
     # Get The Overlay Offset Relative To The File Start
-    overlayOffset = filesize - (pyInstHeader.PackageSize)
+    overlayOffset = filesize - pyInstHeader.PackageSize - addBytes
 
     fp.seek(overlayOffset + pyInstHeader.TOCoffset)
     
@@ -107,7 +118,7 @@ def extract(fp: io.BufferedReader) -> tuple[dict, tuple[int, int]]:
       entry = PyinstEntry.parse(fp, overlayOffset)
       bytesRead += entry.Size
       TOC.append(entry)
-    
+
     fp.seek(overlayOffset)
     
     result = {entry.name: processEntry(fp, entry) for entry in TOC}
@@ -142,7 +153,7 @@ def extractPyzFromName(fp: io.BufferedReader, filename: str):
   
   return zlib.decompress(fp.read(length))
 
-def extractPyz(fp: io.BufferedReader) -> dict:
+def extractPyz(fp: io.BufferedReader) -> dict[str, bytes]:
   
   TOC = getPyzTOC(fp)
   

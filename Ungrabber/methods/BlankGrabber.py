@@ -49,19 +49,10 @@ def main(file: classes.Stub) -> dict:
   if not file.struct:
     file.generateStruct()
   
-  # Get The Loader-O (File That Decrypt The Main Payload) And The Encrypted Payload
-  loader_o = file.struct.get('loader-o', False)
-  cipherText = file.struct.get('blank.aes', False)
-  
-  # In New Version Loader-O Is Just A Long String Of Random Chars
-  if not loader_o:
-    for filename, content in file.struct.items():
-      if len(filename) < 35:
-        continue
-      if filename.endswith('.dll'):
-        continue
-      loader_o = content
-      
+  # Get The Loader-O (File That Decrypt The Main Payload) And The Encrypted Payload (In New Version Loader-O As An Invalid Name)
+  loader_o = file.struct.get('loader-o', file.struct.get('InvalidName', None))
+  cipherText = file.struct.get('blank.aes', None)
+
   if not loader_o or not cipherText:
     raise FileNotFoundError('Tried To Decompile Invalid BlankGrabber')
   
@@ -81,7 +72,7 @@ def main(file: classes.Stub) -> dict:
   
   obfuscatedStub = utils.findLZMA(stubData)
   compiledStub = utils.BlankObfV1(obfuscatedStub)
-  codeObj, VTuple, IsPypy, Opcode = utils.loadPyc(compiledStub, file.pymin)
+  codeObj, VTuple, IsPypy, Opcode = utils.loadPyc(compiledStub, file.version)
   
   # Get Insts And Remove Cache Cause I Want To :<
   stubBadInsts = xdis.Bytecode(codeObj, Opcode).get_instructions(codeObj)
@@ -101,10 +92,68 @@ def main(file: classes.Stub) -> dict:
   if not setting_obj:
     raise Exception('Couldn\'t find the Settings object for BlankGrabber ')
   
-  for const in setting_obj.co_consts:    
-    webhooks = utils.getWebhooks(const)
-    
-    if webhooks:
-      return {'webhooks': webhooks}
+  config = [inst.argval for inst in xdis.Bytecode(setting_obj, xdis.get_opcode(file.version, False)).get_instructions(setting_obj) if inst.opname == 'LOAD_CONST']
   
-  return {'webhooks': []}
+  # Extract full config (ik that's alot)
+  (
+    C2,
+    Mutex,
+    PingMe,
+    VmProtect,
+    Startup,
+    Melt,
+    UacBypass,
+    ArchivePassword,
+    HideConsole,
+    Debug,
+    RunBoundOnStartup,
+    CaptureWebcam,
+    CapturePasswords,
+    CaptureCookies,
+    CaptureAutofills,
+    CaptureHistory,
+    CaptureDiscordTokens,
+    CaptureGames,
+    CaptureWifiPasswords,
+    CaptureSystemInfo,
+    CaptureScreenshot,
+    CaptureTelegram,
+    CaptureCommonFiles,
+    CaptureWallets,
+    FakeError,
+    FakeErrorConfig,
+    BlockAvSites,
+    DiscordInjection
+  ) = config[2:30]
+  
+  
+  return {
+    'webhooks': [base64.b64decode(C2).decode()],
+    'Mutex': base64.b64decode(Mutex).decode(),
+    'PingMe': bool(PingMe),
+    'VmProtect': bool(VmProtect),
+    'Startup': bool(Startup),
+    'Melt': bool(Melt),
+    'UacBypass': bool(UacBypass),
+    'ArchivePassword': base64.b64decode(ArchivePassword).decode(),
+    'HideConsole': bool(HideConsole),
+    'Debug': bool(Debug),
+    'RunBoundOnStartup': bool(RunBoundOnStartup),
+    'CaptureWebcam': bool(CaptureWebcam),
+    'CapturePasswords': bool(CapturePasswords),
+    'CaptureCookies': bool(CaptureCookies),
+    'CaptureAutofills': bool(CaptureAutofills),
+    'CaptureHistory': bool(CaptureHistory),
+    'CaptureDiscordTokens': bool(CaptureDiscordTokens),
+    'CaptureGames': bool(CaptureGames),
+    'CaptureWifiPasswords': bool(CaptureWifiPasswords),
+    'CaptureSystemInfo': bool(CaptureSystemInfo),
+    'CaptureScreenshot': bool(CaptureScreenshot),
+    'CaptureTelegram': bool(CaptureTelegram),
+    'CaptureCommonFiles': bool(CaptureCommonFiles),
+    'CaptureWallets': bool(CaptureWallets),
+    'FakeError': bool(FakeError),
+    'FakeErrorConfig': FakeErrorConfig,
+    'BlockAvSites': bool(BlockAvSites),
+    'DiscordInjection': bool(DiscordInjection)
+}

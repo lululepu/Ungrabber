@@ -12,7 +12,7 @@ def main(file: classes.Stub) -> dict:
   if not source_prepared:
     raise Exception('Couldn\'t Find The Source Prepared For Pysilon')
   
-  loaded = utils.loadPyc(source_prepared, file.pymin)[0]
+  loaded = utils.loadPyc(source_prepared, file.version)[0]
 
   # In Const List Tokens Are Store From The 'auto' Const To The '.' Const
   currTokenIdx = loaded.co_consts.index('auto') + 1

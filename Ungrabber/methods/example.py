@@ -3,7 +3,6 @@ from .. import (
   classes
 )
 
-
 def main(file: classes.Stub) -> dict:
   
   return {'webhook': []}

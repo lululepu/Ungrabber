@@ -3,16 +3,12 @@ from .. import (
   classes,
   extract
 )
-import marshal
-import struct
-import zlib
+from types import CodeType
 import xdis
 import io
-import os
 
-xor_table = []
 
-def Deobf(comp: xdis.Code3, version: tuple[int, int]) -> str:
+def Deobf(comp: xdis.Code3, xor_table: list) -> str:
 
   # Extract The Values (remove the last one cause not needed)
   values = [round(abs(char)) for char in comp.co_consts][:-1]
@@ -31,31 +27,27 @@ def Deobf(comp: xdis.Code3, version: tuple[int, int]) -> str:
 
 def Extract(loadedPyc: xdis.Code3, version: tuple[int, int]) -> dict:
   
+  xor_table = []
+  
   pycObject = xdis.Bytecode(loadedPyc, xdis.get_opcode(version, False))
 
-  # Get Insts And Get Rid Of Cache (ts pmo)
-  insts = (inst for inst in pycObject.get_instructions(loadedPyc) if inst.opname != 'CACHE')
+  insts = pycObject.get_instructions(loadedPyc)
   
   # Extract The Xor Table
   for inst in insts:
-    opname, argval = inst.opname, inst.argval
-    
-    match opname:
-      case 'LOAD_CONST':
-        xor_table.append(round(abs(argval)))
-      case 'STORE_NAME':
+    if inst.opname == 'LOAD_CONST':
+      xor_table.append(round(abs(inst.argval)))
+    elif inst.opname ==  'STORE_NAME':
         break
-  
+      
   # Get Consts After The Xor Table  
   consts = [const for const in loadedPyc.co_consts[len(xor_table) + 1:] if isinstance(const, xdis.Code3)]
 
   # Create Config (store webhook first)
-  config = [Deobf(consts[1], version)]
+  config = [Deobf(consts[1], xor_table)]
   
-  for inst in insts:
-    if inst.opname == 'LOAD_CONST':
-      if isinstance(inst.argval, bool):
-        config.append(inst.argval)
+  config.extend(inst.argval for inst in insts if inst.opname == 'LOAD_CONST' and isinstance(inst.argval, bool))
+
   
   __CONFIG__ = {
     'webhooks': [config[0]],
@@ -67,8 +59,6 @@ def Extract(loadedPyc: xdis.Code3, version: tuple[int, int]) -> dict:
   }
   
   return __CONFIG__
-
-import time
 
 def main(file: classes.Stub) -> list[str] | list[None]:
   
@@ -82,7 +72,7 @@ def main(file: classes.Stub) -> list[str] | list[None]:
   if not config:
     raise Exception('Couln\'t Find The Config File For Empyrean Method')
     
-  pycTuple = utils.loadPyc(config, file.pymin)
+  pycTuple = utils.loadPyc(config, file.version)
   loaded = pycTuple[0]
   
-  return Extract(loaded, (3, file.pymin))
+  return Extract(loaded, file.version)
