@@ -1,11 +1,19 @@
 from .extract import (
   extract
 )
+from .utils import get_version_from_magics
 from typing import *
 import io
 
 class Stub:
-  def __init__(self, FileName: str, FileContent: dict, FileSize: int, fp, gtype: str = '', fstruct: dict = {}, header: bytes = b'', isExe: bool = False) -> None:
+  def __init__(self, FileName: str, FileContent: dict, FileSize: int, fp, gtype: str = None, fstruct: dict = None, header: bytes = None, isExe: bool = True) -> None:
+    if not fstruct:
+      fstruct = {}
+    if not gtype:
+      gtype = ''  
+    if not header:
+      header = b''
+    
     self.name: str = FileName
     self.content: bytes = FileContent
     self.size: int = FileSize
@@ -18,13 +26,12 @@ class Stub:
     self.fp = fp
     
   def generateStruct(self) -> None:
-    
     if not self.isExe:
       self.struct[self.name] = self.content
+      self.version = get_version_from_magics(self.content[:4])
       return
-    
     self.struct, self.version = extract(io.BytesIO(self.content))
-    self.pymin = self.version[1]
+
     
   def getType(self) -> str:
     
@@ -33,7 +40,6 @@ class Stub:
     
     if not self.struct:
       self.generateStruct()
-
     # self.type = 'BlankGrabber' if 'blank.aes' in self.struct else \
     #             'LunaGrabberV2' if 'luna.aes' in self.struct or 'bound.luna' in self.struct else \
     #             'CrealGrabber' if 'Creal' in self.struct or 'creal' in self.struct else \
@@ -64,7 +70,8 @@ class Stub:
       #             'PlainBlankGrabber' if b'Blank Grabber' in content else None
       self.type = 'BCStealer' if b'blackcap' in content else \
             'CStealer' if b'cs.png' in content else \
-              'ExelaV2' if b'cryptography.hazmat.primitives.ciphers' in content and b'DecryptString' in content else \
+            'Pysilon' if b'PySilon' in content else \
+            'ExelaV2' if b'cryptography.hazmat.primitives.ciphers' in content and b'DecryptString' in content else \
             'Empyrean' if b'__CONFIG__' in content else \
             'LunaGrabber' if b'tkcolorpickerr' in content else \
             'HawkishEyes' if b'Hawkish-Eyes' in content else \

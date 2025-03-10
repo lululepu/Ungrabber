@@ -10,11 +10,8 @@ def DeobfBlank(file: bytes):
 def scanFile(file: bytes) -> list:
   founds = []
   
-  wbs = utils.getWebhooks(file)
-  
-  if wbs:
-    founds.extend(wbs)
-    
+  founds.extend(utils.getWebhooks(file))  
+
   obfuscator = utils.DetectObfuscator(file)
   if not obfuscator:
     return founds

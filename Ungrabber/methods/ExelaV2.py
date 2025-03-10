@@ -72,4 +72,4 @@ def main(file: classes.Stub) -> dict:
   StealFiles = utils.getFuncCallArg(code, 'StealFiles')
   
   
-  return {'webhook': utils.getWebhooks(code), 'discord_injection': discord_injection, 'Anti_VM': Anti_VM, 'StealFiles': StealFiles}
+  return {'webhooks': utils.getWebhooks(code), 'discord_injection': discord_injection, 'Anti_VM': Anti_VM, 'StealFiles': StealFiles}

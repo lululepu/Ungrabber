@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from uuid import uuid4
+from contextlib import redirect_stderr
 from Crypto.Cipher import AES
 import xdis.codetype
 from typing import *
@@ -31,16 +30,43 @@ from . import regs
 from types import *
 import base64
 import codecs
+import struct
 import lzma
 import xdis
 import ast
-import re
+import sys
 import io
-import os
 
 LZMASign = b'\xFD\x37\x7A\x58\x5A\x00'
 moduleStartByte = (b'\xE3', b'\x63')
 
+versions = {
+  (50823, 50823): (2, 0),
+  (60202, 60202): (2, 1),
+  (60717, 60717): (2, 2),
+  (62011, 62021): (2, 3),
+  (62041, 62061): (2, 4),
+  (62071, 62131): (2, 5),
+  (62151, 62161): (2, 6),
+  (62171, 62211): (2, 7),
+  (3000, 3131): (3, 0),
+  (3141, 3151): (3, 1),
+  (3160, 3180): (3, 2), # Supported
+  (3190, 3230): (3, 3), # Supported
+  (3250, 3310): (3, 4), # Supported
+  (3320, 3351): (3, 5), # Supported
+  (3360, 3379): (3, 6), # Supported
+  (3390, 3399): (3, 7), # Supported
+  (3400, 3419): (3, 8), # Supported
+  (3420, 3429): (3, 9), # Supported
+  (3430, 3449): (3, 10), # Supported
+  (3450, 3499): (3, 11), # Supported
+  (3500, 3549): (3, 12), # Supported
+  (3550, 3599): (3, 13), # Supported
+  (3600, 3649): (3, 14), # Supported
+  (3650, 3699): (3, 15),
+  
+}
 PY310 = b'\x6F\x0D\x0D\x0A'+b'\00'*12
 PY311 = b'\xA7\x0D\x0D'+b'\x00'*13
 PY312 = b'\xCB\x0D\x0D\x0A'+b'\00'*12
@@ -48,6 +74,15 @@ PY312 = b'\xCB\x0D\x0D\x0A'+b'\00'*12
 CODE_REF = b'\xE3'
 CODE = b'\x63' # CODE_REF & ~128
 
+def magic_to_int(magic: bytes) -> int:
+  return struct.unpack("<Hcc", magic)[0]
+
+def get_version_from_magics(magicBytes: bytes) -> tuple[int, int] | None:
+  magicInt = magic_to_int(magicBytes)
+  for i, v in versions.items():
+    if magicInt >= i[0] and magicInt <= i[1]:
+      return v
+  return None
 
 def setHeader(pyc: bytes, header: bytes) -> bytes:
   """
@@ -66,31 +101,6 @@ def setHeader(pyc: bytes, header: bytes) -> bytes:
   
   return header + pyc[16:]
 
-
-def getPycVersion(pyc: bytes) -> int:
-  """
-  Give You The Version Of A Pyc Without Header
-
-  Args:
-      pyc (bytes): The Target Pyc
-
-  Returns:
-      int: The PyMin Version
-  """
-  HEADERS = {
-    10: PY310,
-    11: PY311,
-    12: PY312
-  }
-  
-  for version, header in HEADERS.items():
-    readyPyc = setHeader(pyc, header)
-    print(readyPyc[:32])
-    try: 
-      xdis.load_module_from_file_object(io.BytesIO(readyPyc))
-    except:
-      continue
-    return version
 
 def isValidHeader(pyc: bytes):
   return pyc.startswith((PY310, PY311, PY312))
@@ -117,22 +127,11 @@ def getHeader(pymin: int) -> bytes:
       return PY312
     case _:
       raise Exception(f'Unsupported version given to function: getHeader')
-    
-def getTToken(content: str) -> list:
-  """
-  Return a list of strings that match a telegram token regex in the given content
-
-  Args:
-      content (str): `The content to check`
-
-  Returns:
-      list: `The list of strings that match the regex`
-  """
-  return regs.TelegramToken.findall(content)
+  
 
 def getWebhooks(content) -> list:
   """
-  Return a list of Plain webhooks/B64 Encoded webhoook found in a strings
+  Return a list of Plain webhooks/B64 Encoded webhoook/C2 found in a strings
 
   Args:
       content (str): `Text containing a webhook (plain/b64 webhook)`
@@ -147,13 +146,14 @@ def getWebhooks(content) -> list:
     regs.DiscordB64Webhook.findall(content),
     regs.CanaryB64Webhook.findall(content),
     regs.PTBB64Webhook.findall(content),
-    regs.DiscordAppB64Webhook.findall(content)
+    regs.DiscordAppB64Webhook.findall(content),
+    regs.TelegramToken.findall(content)
   ], [])
 
   founds = [base64.b64decode(webhook) for webhook in encoded]
     
   founds.extend(regs.DiscordWebhook.findall(content))
-  return founds or None
+  return founds 
 
 def getVar(code: str, var: str) -> str:
   """
@@ -267,9 +267,9 @@ def loadPyc(pyc: bytes, version: tuple[int, int]) -> tuple[xdis.Code3, tuple[int
   """
   
   if not isValidHeader(pyc):
+
     pyc = setHeader(pyc, getHeader(version[1]))
     
-  open('caca.pyc', 'wb').write(pyc)
   loaded = xdis.load_module_from_file_object(io.BytesIO(pyc))
   
   version_tuple = loaded[0]

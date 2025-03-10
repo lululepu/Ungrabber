@@ -3,7 +3,6 @@ from .. import (
   classes,
   extract
 )
-from types import CodeType
 import xdis
 import io
 

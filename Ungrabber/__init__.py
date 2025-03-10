@@ -1,4 +1,8 @@
 from . import utils
 from . import classes
 from . import extract
-from .main import *
+from .main import (
+  decompile,
+  getMethod,
+  load
+)

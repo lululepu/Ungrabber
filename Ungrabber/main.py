@@ -18,11 +18,36 @@ def getMethod(methodName):
 def load(FileName: str) -> Stub:
   with open(FileName, 'rb') as fp:
     content = fp.read()
-    return Stub(FileName = FileName, FileContent = content, FileSize = len(content), fp = fp, isExe = True)
+    return Stub(FileName = FileName, FileContent = content, FileSize = len(content), fp = fp, isExe = FileName.endswith('exe'))
 
-def decompile(FileName: str) -> dict:
+def decompile(Object) -> dict:
+  """
+  Decompile a Pyc or Py file
+
+  Args:
+      Object (str/Stub): FileName or Stub object to decompile
+
+  Returns:
+      dict: The config Of The Grabber
+  """
   
-  with open(FileName, 'rb') as fp:
-    content = fp.read()
-    stub = Stub(FileName = FileName, FileContent = content, FileSize = len(content), fp = fp, isExe = True)
-    return getMethod(stub.getType())(stub)
+  stub = Object
+  
+  if isinstance(Object, str):
+    with open(Object, 'rb') as fp:
+      content = fp.read()
+      stub = Stub(FileName = Object, FileContent = content, FileSize = len(content), fp = fp, isExe = Object.endswith('exe'))
+      
+  result = {}
+  
+  if not stub.isExe:
+    found = getMethod('Any')(stub)
+    result = found
+    
+  for i, v in getMethod(stub.getType())(stub).items():
+    if result.get(i, False):
+      result[i] += v
+    else:
+      result[i] = v
+      
+  return result

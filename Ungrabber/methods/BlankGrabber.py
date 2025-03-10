@@ -8,7 +8,6 @@ import zipfile
 import base64
 import zlib
 import xdis
-import lzma
 import re
 import io
 

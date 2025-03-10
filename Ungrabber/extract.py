@@ -1,6 +1,5 @@
 # TODO: Make the extractor in c++ for better performances
 
-import re
 import io
 import os
 import zlib
@@ -46,7 +45,6 @@ class PyinstEntry:
   @staticmethod
   def parse(fp: io.BufferedReader, overlayOffset: int) -> "PyinstEntry":
     
-    # print(fp.read(4))
     size = struct.unpack('!I', fp.read(4))[0]
     
     # TotalSize - ((Size) Size + (Offset) Size + (CompressedSize) Size + (UncompressedSize) Size + (CompressionFlag) Size + (type) Size)
