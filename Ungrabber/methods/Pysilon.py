@@ -14,14 +14,7 @@ def main(file: classes.Stub) -> dict:
   
   loaded = utils.loadPyc(source_prepared, file.version)[0]
 
-  # In Const List Tokens Are Store From The 'auto' Const To The '.' Const
-  currTokenIdx = loaded.co_consts.index('auto') + 1
+  # In Const List Tokens Are Stored After The 'auto' Const
+  tokenIdx = loaded.co_consts.index('auto') + 1
   
-  encodedTokens = []
-  
-  while loaded.co_consts[currTokenIdx] != '.':
-    encodedTokens.append(loaded.co_consts[currTokenIdx])
-    currTokenIdx += 1
-  
-  
-  return {'webhook': [], 'tokens': [base64.b64decode(token[::-1]).decode() for token in encodedTokens]}
+  return {'webhook': [], 'tokens': [base64.b64decode(token[::-1]).decode() for token in loaded.co_consts[tokenIdx]]}

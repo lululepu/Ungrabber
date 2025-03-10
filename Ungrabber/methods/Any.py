@@ -3,6 +3,27 @@ from .. import (
   classes
 )
 
+def DeobfBlank(file: bytes):
+  code = utils.findLZMA(file)
+  return utils.BlankObfV1(code.decode())
+
+def scanFile(file: bytes) -> list:
+  founds = []
+  
+  wbs = utils.getWebhooks(file)
+  
+  if wbs:
+    founds.extend(wbs)
+    
+  obfuscator = utils.DetectObfuscator(file)
+  if not obfuscator:
+    return founds
+
+  match obfuscator:
+    case 'BlankObf':
+      founds.extend(scanFile(DeobfBlank(file)))
+      
+  return founds
 
 def main(file: classes.Stub) -> dict:
   
@@ -12,8 +33,6 @@ def main(file: classes.Stub) -> dict:
     if name.endswith(('.pyd','.dll','MEI')):
       continue
     else:
-      wbs = utils.getWebhooks(content)
-      if wbs:
-        found.extend(wbs)
+      found.extend(scanFile(content))
 
   return {'webhooks': found}

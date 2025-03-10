@@ -215,6 +215,16 @@ def AESDecrypt(key: bytes, iv: bytes, ciphertext: bytes) -> bytes:
   decrypted = cipher.decrypt(ciphertext)
   return decrypted
 
+def DetectObfuscator(code: bytes):
+  if isinstance(code, str):
+    code = code.encode()
+  
+  if b'___________' in code:
+    if findLZMA(code):
+      return 'BlankObf'
+  
+  return None
+
 def BlankObfV1(code: str) -> str:
   """
   Deobfuscate BlankObfV1 Plain Obfuscation

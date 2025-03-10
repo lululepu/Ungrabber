@@ -20,10 +20,9 @@ def load(FileName: str) -> Stub:
     content = fp.read()
     return Stub(FileName = FileName, FileContent = content, FileSize = len(content), fp = fp, isExe = True)
 
-def decompile(FileName: str) -> str:
+def decompile(FileName: str) -> dict:
   
   with open(FileName, 'rb') as fp:
     content = fp.read()
     stub = Stub(FileName = FileName, FileContent = content, FileSize = len(content), fp = fp, isExe = True)
-    print(stub.getType())
     return getMethod(stub.getType())(stub)

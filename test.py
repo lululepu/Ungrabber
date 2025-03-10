@@ -5,11 +5,13 @@ import io
 from types import CodeType
 
 
-print(Ungrabber.decompile('exela.exe'))
-print(Ungrabber.decompile('BlankGrabber.exe'))
-print(Ungrabber.decompile('cstealer.exe'))
-print(Ungrabber.decompile('pysilon.exe'))
-print(Ungrabber.decompile('empyrean.exe'))
+# print(Ungrabber.decompile('exela.exe'))
+# print(Ungrabber.decompile('BlankGrabber.exe'))
+# print(Ungrabber.decompile('cstealer.exe'))
+# print(Ungrabber.decompile('pysilon.exe'))
+# print(Ungrabber.decompile('empyrean.exe'))
+print(Ungrabber.decompile('9D8D941E.exe'))
+
 
 
 # loaded = Ungrabber.load('SWAT.exe')
