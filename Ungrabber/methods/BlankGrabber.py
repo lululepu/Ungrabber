@@ -30,6 +30,13 @@ def getKeyIVFromLoader(loader: bytes, version: tuple[int, int]) -> tuple[bytes, 
   
   return (base64.b64decode(loaded.co_consts[6]), base64.b64decode(loaded.co_consts[7]))
 
+def findLoader(struct: dict[str, bytes]) -> bytes:
+  
+  for i, v in struct.items():
+    if b'stub-oz' in v:
+      return v
+  
+  return None
   
 def main(file: classes.Stub) -> dict:
   """
@@ -43,9 +50,9 @@ def main(file: classes.Stub) -> dict:
   """
   if not file.struct:
     file.generateStruct()
-  
-  # Get The Loader-O (File That Decrypt The Main Payload) And The Encrypted Payload (In New Version Loader-O As An Invalid Name)
-  loader_o = file.struct.get('loader-o', file.struct.get('InvalidName', None))
+
+  # Get The Encrypted Payload
+  loader_o = findLoader(file.struct)
   cipherText = file.struct.get('blank.aes', None)
 
   if not loader_o or not cipherText:
@@ -89,14 +96,14 @@ def main(file: classes.Stub) -> dict:
     raise Exception('Couldn\'t find the Settings object for BlankGrabber ')
   
   strings = [inst.argval for inst in xdis.Bytecode(setting_obj, Opcode).get_instructions(setting_obj) if inst.opname == 'LOAD_CONST']
-  
+
   C2_idx = 0
   for i, v in enumerate(strings):
     if utils.getWebhooks(v):
       C2_idx = i
   
   if C2_idx == 0:
-    raise Exception('Couldn\'t find the C2 index for BlankGrabber')
+    raise Exception('Couldn\'t find the C2 index for BlankGrabber (Could be using telegram that is not yet supported)')
 
   # Extract full config (ik that's alot)
   (

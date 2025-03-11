@@ -65,7 +65,6 @@ class PyinstEntry:
     except:
       entry.name = 'InvalidName'
     
-
     return entry
 
 def getHeaderOffset(fp: io.BufferedReader):
