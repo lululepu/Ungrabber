@@ -34,20 +34,22 @@ def main(file: classes.Stub) -> dict:
   
   loaded = utils.loadPyc(mainPyc, file.version)[0]
   
+  # First func is found after the '__main__' const
   func1 = loaded.co_consts[loaded.co_consts.index('__main__') - 2]
-  func2 = func1.co_consts[-3]
   
-  for const in func2.co_consts:
-    if not isinstance(const, str):
-      continue
-    if len(const) > 500:
-      ciphertext = const
-      break
-      
+  # I know hard coding index is not good but :<
+  func2 = func1.co_consts[-3]
+
+  strings = (i for i in func2.co_consts if isinstance(i, str))
+  ciphertext = next(const for const in strings if len(const) > 500)
+
   if not ciphertext:
     raise Exception('Couldn\'t find the ciphertext for TrapStealer')
   
+  # Still hard coding (idek if it work for every grabbers)
   func3 = func1.co_consts[2]
+  
+  # I don't have any excuse..
   key = func3.co_consts[-2]
  
   if not key:
@@ -56,7 +58,7 @@ def main(file: classes.Stub) -> dict:
   code = Decrypt(ciphertext, key)
   
   
-  encwb, keywb = [i.value for i in utils.getVar(code, 'webhook').elts] 
+  encwb, keywb = (i.value for i in utils.getVar(code, 'webhook').elts)
   
   config = {
     "logfile": utils.getVarConst(code, 'logfile'),

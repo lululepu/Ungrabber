@@ -40,7 +40,8 @@ def main(file: classes.Stub) -> dict:
   loaded = utils.loadPyc(stub, file.version)[0]
 
   index = None
-    
+  
+  # Find the encrypted code index
   for idx in range(len(loaded.co_consts)):
     const = loaded.co_consts[idx]
     

@@ -1,7 +1,9 @@
+from .utils import mergeAdd
 from .classes import Stub
 from .methods import *
 from . import methods
 import warnings
+import io
 
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 
@@ -15,12 +17,33 @@ def getMethod(methodName):
 
   return func
 
-def load(FileName: str) -> Stub:
-  with open(FileName, 'rb') as fp:
-    content = fp.read()
-    return Stub(FileName = FileName, FileContent = content, FileSize = len(content), fp = fp, isExe = FileName.endswith('exe'))
+def loads(buffer: bytes) -> Stub:
+  """
+  Get a stub object for a given file from buffer (raw pyc/exe) 
 
-def decompile(Object) -> dict:
+  Args:
+      buffer (bytes): The buffer for the file
+
+  Returns:
+      Stub: The stub object of the file
+  """
+  return Stub(FileName = 'placeholder', FileContent = buffer, FileSize = len(buffer), fp = io.BufferedReader(buffer), isExe = buffer.startswith(b'MZ'))
+
+def load(fp: io.BufferedReader) -> Stub:
+  """
+  Get a stub object for a given file from name
+
+  Args:
+      FileName (str): The Name of the file to load
+
+  Returns:
+      Stub: The stub object of the file
+  """
+  content = fp.read()
+  fp.seek(0)
+  return Stub(FileName = 'placeholder', FileContent = content, FileSize = len(content), fp = fp, isExe = content.startswith(b'MZ'))
+
+def decompile(Object: str | Stub) -> dict:
   """
   Decompile a Pyc or Py file
 
@@ -31,23 +54,16 @@ def decompile(Object) -> dict:
       dict: The config Of The Grabber
   """
   
-  stub = Object
   
   if isinstance(Object, str):
     with open(Object, 'rb') as fp:
       content = fp.read()
-      stub = Stub(FileName = Object, FileContent = content, FileSize = len(content), fp = fp, isExe = Object.endswith('exe'))
-      
+      Object = Stub(FileName = Object, FileContent = content, FileSize = len(content), fp = fp, isExe = content.startswith(b'MZ'))
+
   result = {}
-  
-  if not stub.isExe:
-    found = getMethod('Any')(stub)
+   
+  if not Object.isExe:
+    found = getMethod('Any')(Object)
     result = found
     
-  for i, v in getMethod(stub.getType())(stub).items():
-    if result.get(i, False):
-      result[i] += v
-    else:
-      result[i] = v
-      
-  return result
+  return mergeAdd(result, getMethod(Object.getType())(Object))

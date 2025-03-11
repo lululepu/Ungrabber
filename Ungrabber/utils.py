@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 from contextlib import redirect_stderr
+import re
 from Crypto.Cipher import AES
 import xdis.codetype
 from typing import *
@@ -106,8 +107,18 @@ def setHeader(pyc: bytes, header: bytes) -> bytes:
   return header + pyc[16:]
 
 
-def isValidHeader(pyc: bytes):
-  return pyc.startswith((PY310, PY311, PY312, PY313))
+def isValidHeader(pyc: bytes) -> bool:
+  """
+  Check if a pyc header is valid and supported
+
+  Args:
+      pyc (bytes): The pyc to check
+
+  Returns:
+      bool: True if header is valid
+  """
+  
+  return pyc.startswith((PY310[2:], PY311[2:], PY312[2:], PY313[2:]))
 
 def getHeader(pymin: int) -> bytes:
   """
@@ -251,6 +262,28 @@ def BlankObfV1(code: str) -> str:
   deobfuscated = base64.b64decode(codecs.decode(____, 'rot13')+_____+______[::-1]+_______)
   content = deobfuscated
   return content
+
+def mergeAdd(dict1: dict, dict2: dict) -> dict:
+  """
+  Merge 2 dict but add the already existing index instead of replacing
+
+  Args:
+      dict1 (dict): First dict
+      dict2 (dict): Second dict
+
+  Returns:
+      dict: The merged dict
+  """
+  
+  result = dict1
+  
+  for i, v in dict2.items():
+    if result.get(i, False):
+      result[i] += v
+    else:
+      result[i] = v
+      
+  return result
 
 def findLZMA(content: bytes) -> bytes:
   """
