@@ -13,7 +13,7 @@ import io
 
 KeyIVRegex = re.compile(rb'stub-oz,([\w\d=]+)|([\d\w+/=]+)c\x03')
 
-def getKeyIVFromLoader(loader: bytes) -> tuple[bytes, int]:
+def getKeyIVFromLoader(loader: bytes, version: tuple[int, int]) -> tuple[bytes, int]:
   """
   Return Key And IV From Loader-O File
 
@@ -23,16 +23,12 @@ def getKeyIVFromLoader(loader: bytes) -> tuple[bytes, int]:
   Returns:
       tuple (bytes, int): The Key And IV
   """
-  found = re.findall(KeyIVRegex, loader)
-  if len(found) < 2:
-    raise Exception('Regex Error While Extracting Key, IV From BlankGrabber')
-  key, iv = found
   
-  # I Did That Cause The Regex Return ("", iv) Or (key, "")
-  key = [i for i in key if i][0]
-  iv = [i for i in iv if i][0]
+  loaded = utils.loadPyc(loader, version)[0]
   
-  return (base64.b64decode(key), base64.b64decode(iv))
+  # key, iv are at index 6 and 7 :3
+  
+  return (base64.b64decode(loaded.co_consts[6]), base64.b64decode(loaded.co_consts[7]))
 
   
 def main(file: classes.Stub) -> dict:
@@ -55,7 +51,7 @@ def main(file: classes.Stub) -> dict:
   if not loader_o or not cipherText:
     raise FileNotFoundError('Tried To Decompile Invalid BlankGrabber')
   
-  key, iv = getKeyIVFromLoader(loader_o)
+  key, iv = getKeyIVFromLoader(loader_o, file.version)
 
   try:
     uncompressed = zlib.decompress(cipherText[::-1])
@@ -70,6 +66,7 @@ def main(file: classes.Stub) -> dict:
         stubData = stub.read()
   
   obfuscatedStub = utils.findLZMA(stubData)
+
   compiledStub = utils.BlankObfV1(obfuscatedStub)
   codeObj, VTuple, IsPypy, Opcode = utils.loadPyc(compiledStub, file.version)
   
@@ -91,8 +88,16 @@ def main(file: classes.Stub) -> dict:
   if not setting_obj:
     raise Exception('Couldn\'t find the Settings object for BlankGrabber ')
   
-  config = [inst.argval for inst in xdis.Bytecode(setting_obj, xdis.get_opcode(file.version, False)).get_instructions(setting_obj) if inst.opname == 'LOAD_CONST']
+  strings = [inst.argval for inst in xdis.Bytecode(setting_obj, Opcode).get_instructions(setting_obj) if inst.opname == 'LOAD_CONST']
   
+  C2_idx = 0
+  for i, v in enumerate(strings):
+    if utils.getWebhooks(v):
+      C2_idx = i
+  
+  if C2_idx == 0:
+    raise Exception('Couldn\'t find the C2 index for BlankGrabber')
+
   # Extract full config (ik that's alot)
   (
     C2,
@@ -123,8 +128,7 @@ def main(file: classes.Stub) -> dict:
     FakeErrorConfig,
     BlockAvSites,
     DiscordInjection
-  ) = config[2:30]
-  
+  ) = strings[C2_idx : C2_idx+28]
   
   return {
     'webhooks': [base64.b64decode(C2).decode()],

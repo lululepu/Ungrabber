@@ -173,7 +173,7 @@ def getWebhooks(content) -> list:
   return founds 
 
 # I use this function to optimize code.
-@functools.lru_cache(maxsize=None)
+# @functools.lru_cache(maxsize=5) (disabled due to problem with blank)
 def walk_cache(code: str):
   return ast.walk(ast.parse(code))
 
