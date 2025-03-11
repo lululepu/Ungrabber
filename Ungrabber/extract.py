@@ -90,6 +90,9 @@ def extract(fp: io.BufferedReader) -> tuple[dict, tuple[int, int]]:
     fp.seek(0, os.SEEK_SET)
     headerOffset = getHeaderOffset(fp)
     
+    if headerOffset == -1:
+      raise Exception('Invalid pyinstaller archive')
+    
     filesize = fp.seek(0, os.SEEK_END)
     
     fp.seek(headerOffset + 24)

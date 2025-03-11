@@ -28,6 +28,7 @@ import xdis.codetype
 from typing import *
 from . import regs
 from types import *
+import functools
 import base64
 import codecs
 import struct
@@ -70,6 +71,9 @@ versions = {
 PY310 = b'\x6F\x0D\x0D\x0A'+b'\00'*12
 PY311 = b'\xA7\x0D\x0D'+b'\x00'*13
 PY312 = b'\xCB\x0D\x0D\x0A'+b'\00'*12
+PY313 = b'\xF3\x0D'+b'\00'*14
+
+
 
 CODE_REF = b'\xE3'
 CODE = b'\x63' # CODE_REF & ~128
@@ -103,7 +107,7 @@ def setHeader(pyc: bytes, header: bytes) -> bytes:
 
 
 def isValidHeader(pyc: bytes):
-  return pyc.startswith((PY310, PY311, PY312))
+  return pyc.startswith((PY310, PY311, PY312, PY313))
 
 def getHeader(pymin: int) -> bytes:
   """
@@ -125,6 +129,8 @@ def getHeader(pymin: int) -> bytes:
       return PY311
     case 12:
       return PY312
+    case 13:
+      return PY313
     case _:
       raise Exception(f'Unsupported version given to function: getHeader')
   
@@ -155,25 +161,33 @@ def getWebhooks(content) -> list:
   founds.extend(regs.DiscordWebhook.findall(content))
   return founds 
 
-def getVar(code: str, var: str) -> str:
+# I use this function to optimize code.
+@functools.lru_cache(maxsize=None)
+def walk_cache(code: str):
+  return ast.walk(ast.parse(code))
+
+def getVar(code: str, var: str):
   """
-  Get an var value in a code from name
+  Internal Use Function
+  """
+  for node in walk_cache(code):
+    if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == var for target in node.targets):
+      return node.value
+
+
+def getVarConst(code: str, var: str) -> bool:
+  """
+  Get an Constant value in a code from name
 
   Args:
       code (str): `The code to analyse`
       var (str): `The name of the var to retrieve`
 
   Returns:
-      str: `The value of the var`
+      Any: `The value of the var`
   """
-  
-  astTree = ast.parse(code)
-  for node in ast.walk(astTree):
-    if isinstance(node, ast.Assign):
-      for target in node.targets:
-        if isinstance(target, ast.Name) and target.id == var:
-          return node.value.value
 
+  return getVar(code, var).value
 
 def getFuncCallArg(code: str, varname: str) -> str:
   """
@@ -192,12 +206,7 @@ def getFuncCallArg(code: str, varname: str) -> str:
       str: `The arg of the func call`
   """
   
-  astTree = ast.parse(code)
-  for node in ast.walk(astTree):
-    if isinstance(node, ast.Assign):
-      for target in node.targets:
-        if isinstance(target, ast.Name) and target.id == varname:
-          return node.value.args[0].value
+  return getVar(code, varname).args[0].value
 
 def AESDecrypt(key: bytes, iv: bytes, ciphertext: bytes) -> bytes:
   """
@@ -235,10 +244,10 @@ def BlankObfV1(code: str) -> str:
   Returns:
       str: `The deobfuscated code`
   """
-  ____ = getVar(code, '____')
-  _____ = getVar(code, '_____')
-  ______ = getVar(code, '______')
-  _______ = getVar(code, '_______')
+  ____ = getVarConst(code, '____')
+  _____ = getVarConst(code, '_____')
+  ______ = getVarConst(code, '______')
+  _______ = getVarConst(code, '_______')
   deobfuscated = base64.b64decode(codecs.decode(____, 'rot13')+_____+______[::-1]+_______)
   content = deobfuscated
   return content

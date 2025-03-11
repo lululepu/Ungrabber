@@ -46,10 +46,8 @@ def Extract(loadedPyc: xdis.Code3, version: tuple[int, int]) -> dict:
   config = [Deobf(consts[1], xor_table)]
   
   config.extend(inst.argval for inst in insts if inst.opname == 'LOAD_CONST' and isinstance(inst.argval, bool))
-
   
   __CONFIG__ = {
-    'webhooks': [config[0]],
     'antidebug': config[1],
     'browsers': config[2],
     'discordtoken': config[3],
@@ -57,7 +55,7 @@ def Extract(loadedPyc: xdis.Code3, version: tuple[int, int]) -> dict:
     'systeminfo': config[5],
   }
   
-  return __CONFIG__
+  return {'webhook': [config[0]], 'config': __CONFIG__}
 
 def main(file: classes.Stub) -> list[str] | list[None]:
   

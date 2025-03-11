@@ -3,5 +3,6 @@ from . import (
   Pysilon,
   Empyrean,
   ExelaV2,
+  TrapStealer,
   Any
 )

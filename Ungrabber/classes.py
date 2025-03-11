@@ -68,7 +68,8 @@ class Stub:
       #             'HawkishEyes' if b'Hawkish-Eyes' in content else \
       #             'NiceRAT' if b't.me/NiceRAT' in content else \
       #             'PlainBlankGrabber' if b'Blank Grabber' in content else None
-      self.type = 'BCStealer' if b'blackcap' in content else \
+      self.type = 'TrapStealer' if b'detect_debugger_timing' in content else \
+            'BCStealer' if b'blackcap' in content else \
             'CStealer' if b'cs.png' in content else \
             'Pysilon' if b'PySilon' in content else \
             'ExelaV2' if b'cryptography.hazmat.primitives.ciphers' in content and b'DecryptString' in content else \

@@ -5,4 +5,4 @@ from .. import (
 
 def main(file: classes.Stub) -> dict:
   
-  return {'webhooks': []}
+  return {'webhooks': [], 'config': {}}
