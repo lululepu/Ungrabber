@@ -61,26 +61,30 @@ def main(file: classes.Stub) -> dict:
   key, iv = getKeyIVFromLoader(loader_o, file.version)
 
   try:
+    # Decompress the ciphertext (its reversed)
     uncompressed = zlib.decompress(cipherText[::-1])
   except:
     raise Exception('BlankGrabber Invalid cipherText')
   
   zipArchive = utils.AESDecrypt(key, iv, uncompressed)
   
+  # Blank Grabber store the stub in a zip file
   with io.BytesIO(zipArchive) as fileBuffer:
     with zipfile.ZipFile(fileBuffer, 'r') as zipBuffer:
       with zipBuffer.open('stub-o.pyc', 'r') as stub:
         stubData = stub.read()
   
+  # Deobfuscate the stub
   obfuscatedStub = utils.findLZMA(stubData)
-
   compiledStub = utils.BlankObfV1(obfuscatedStub)
+  
   codeObj, VTuple, IsPypy, Opcode = utils.loadPyc(compiledStub, file.version)
   
   # Get Insts And Remove Cache Cause I Want To :<
   stubBadInsts = xdis.Bytecode(codeObj, Opcode).get_instructions(codeObj)
   stubInsts = filter(lambda x:x.opname.lower() != 'cache', stubBadInsts)
   
+  # Find the settings code object
   for inst in stubInsts:
     if inst.opname != 'LOAD_CONST':
       continue

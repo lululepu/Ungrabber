@@ -44,7 +44,16 @@ class PyinstEntry:
   
   @staticmethod
   def parse(fp: io.BufferedReader, overlayOffset: int) -> "PyinstEntry":
-    
+    """
+    Parse a pyinstaller entry
+
+    Args:
+        fp (io.BufferedReader): The main File Pointer
+        overlayOffset (int): The offset of pyinstaller overlay
+
+    Returns:
+        PyinstEntry: The parsed entry (relative to overlay start)
+    """
     size = struct.unpack('!I', fp.read(4))[0]
     
     # TotalSize - ((Size) Size + (Offset) Size + (CompressedSize) Size + (UncompressedSize) Size + (CompressionFlag) Size + (type) Size)
@@ -67,14 +76,32 @@ class PyinstEntry:
     
     return entry
 
-def getHeaderOffset(fp: io.BufferedReader):
+def getHeaderOffset(fp: io.BufferedReader) -> int:
+  """
+  Find the header of the pyinstaller archive and return the pos
+
+  Args:
+      fp (io.BufferedReader): The main File Pointer
+
+  Returns:
+      int: The position of the header relative to the file start
+  """
   content = fp.read()
   pyInstHeader = content.rfind(pyinstHeaderSign)
   
   return pyInstHeader
 
-def processEntry(fp: io.BufferedReader, entry: PyinstEntry):
-  
+def processEntry(fp: io.BufferedReader, entry: PyinstEntry) -> bytes:
+  """
+  Process a pyinstaller entry and return the decompressed data
+
+  Args:
+      fp (io.BufferedReader): The main File Pointer
+      entry (PyinstEntry): The entry to process
+
+  Returns:
+      bytes: The decompressed data
+  """
   if entry.CompressedSize == 0:
     return b''
   
@@ -86,6 +113,18 @@ def processEntry(fp: io.BufferedReader, entry: PyinstEntry):
   return zlib.decompress(content)
 
 def extract(fp: io.BufferedReader) -> tuple[dict, tuple[int, int]]:
+    """
+    Main Extract function
+
+    Args:
+        fp (io.BufferedReader): The main File Pointer
+
+    Raises:
+        Exception: If a bad pyinstaller archive is detected
+
+    Returns:
+        tuple[dict, tuple[int, int]]: A tuple of the archive structure and the version tuple 
+    """
     fp.seek(0, os.SEEK_SET)
     headerOffset = getHeaderOffset(fp)
     

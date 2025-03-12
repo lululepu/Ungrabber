@@ -4,6 +4,6 @@ from . import extract
 from .main import (
   decompile,
   getMethod,
+  loads,
   load,
-  loads
 )

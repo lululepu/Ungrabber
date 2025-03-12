@@ -6,6 +6,9 @@ from typing import *
 import io
 
 class Stub:
+  """
+  The stub class to handle .pyc file and .exe file (for easier extraction)
+  """
   def __init__(self, FileName: str, FileContent: dict, FileSize: int, fp, gtype: str = None, fstruct: dict = None, header: bytes = None, isExe: bool = True) -> None:
     if not fstruct:
       fstruct = {}

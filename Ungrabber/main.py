@@ -8,6 +8,15 @@ import io
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 def getMethod(methodName):
+  """
+  Get a method from the methods folder by name (Return Any method if not found)
+
+  Args:
+      methodName (str): The method name
+
+  Returns:
+      Function: The main function of the method
+  """
   module = getattr(methods, methodName, None)
   if not module:
     if not __debug__:

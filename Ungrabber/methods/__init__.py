@@ -5,5 +5,5 @@ from . import (
   ExelaV2,
   TrapStealer,
   RedTigerStealer,
-  Any
+  Any,
 )
