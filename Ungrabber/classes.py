@@ -29,6 +29,9 @@ class Stub:
     self.fp = fp
     
   def generateStruct(self) -> None:
+    """
+    Decompile the pyinstaller package to make a struct
+    """
     if not self.isExe:
       self.struct[self.name] = self.content
       self.version = get_version_from_magics(self.content[:4])
@@ -37,7 +40,12 @@ class Stub:
 
     
   def getType(self) -> str:
-    
+    """
+    Get the type of the grabber
+
+    Returns:
+        str: The type
+    """
     if self.type:
       return self.type
     
