@@ -38,13 +38,19 @@ def Decrypt(ciphertext, key) -> str:
 
 def main(file: classes.Stub) -> dict:
   
-  loaded = utils.loadPyc(findMainPyc(file.struct), file.version)[0]
+  mainPyc = findMainPyc(file.struct)
+  
+  
+  loaded = utils.loadPyc(mainPyc, file.version)[0]
   
   # index of const below - 1 = key, - 2 = ciphertext
   
   # Use this const cause its unique
-  constIdx = loaded.co_consts.index('RedTiger Ste4ler - github.com/loxy0dev/RedTiger-Tools')
-
+  try:
+    constIdx = loaded.co_consts.index('RedTiger Ste4ler - github.com/loxy0dev/RedTiger-Tools')
+  except:
+    return {'webhooks': []}
+  
   key = loaded.co_consts[constIdx - 1]
   ciphertext = loaded.co_consts[constIdx - 2]
   

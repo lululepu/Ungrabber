@@ -69,10 +69,15 @@ def decompile(Object: str | Stub) -> dict:
       content = fp.read()
       Object = Stub(FileName = Object, FileContent = content, FileSize = len(content), fp = fp, isExe = content.startswith(b'MZ'))
 
-  result = {}
+  result = {'webhooks': []}
    
   if not Object.isExe:
     found = getMethod('Any')(Object)
     result = found
-    
-  return mergeAdd(result, getMethod(Object.getType())(Object))
+  
+  result = mergeAdd(result, getMethod(Object.getType())(Object))
+  
+  if len(result['webhooks']) < 1:
+    result = mergeAdd(result, getMethod('Any')(Object))
+  
+  return result
