@@ -69,6 +69,7 @@ class Stub:
       #             'NiceRAT' if b't.me/NiceRAT' in content else \
       #             'PlainBlankGrabber' if b'Blank Grabber' in content else None
       self.type = 'TrapStealer' if b'detect_debugger_timing' in content else \
+            'RedTigerStealer' if b'RedTiger Ste4ler' in content else \
             'BCStealer' if b'blackcap' in content else \
             'CStealer' if b'cs.png' in content else \
             'Pysilon' if b'PySilon' in content else \

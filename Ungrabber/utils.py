@@ -164,9 +164,7 @@ def getWebhooks(content) -> list:
     regs.CanaryB64Webhook.findall(content),
     regs.PTBB64Webhook.findall(content),
     regs.DiscordAppB64Webhook.findall(content),
-    regs.TelegramToken.findall(content)
   ], [])
-
   founds = [base64.b64decode(webhook) for webhook in encoded]
     
   founds.extend(regs.DiscordWebhook.findall(content))

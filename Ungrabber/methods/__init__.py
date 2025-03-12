@@ -4,5 +4,6 @@ from . import (
   Empyrean,
   ExelaV2,
   TrapStealer,
+  RedTigerStealer,
   Any
 )
