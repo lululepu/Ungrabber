@@ -36,7 +36,8 @@ def loads(buffer: bytes) -> Stub:
   Returns:
       Stub: The stub object of the file
   """
-  return Stub(FileName = 'placeholder', FileContent = buffer, FileSize = len(buffer), fp = io.BufferedReader(buffer), isExe = buffer.startswith(b'MZ'))
+
+  return Stub(FileName = 'placeholder', FileContent = buffer, FileSize = len(buffer), fp = io.BytesIO(buffer), isExe = buffer.startswith(b'MZ'))
 
 def load(fp: io.BufferedReader) -> Stub:
   """

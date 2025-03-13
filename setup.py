@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ungrabber',
-    version='0.0.5',
+    version='0.0.6',
     license='MIT',
     description='Ungrabber is a python module to automatically decompile and get the C2/Type of almost every known python grabbers',
     long_description=open('README.md').read(),
