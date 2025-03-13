@@ -3,6 +3,8 @@ from .. import (
   classes,
   extract
 )
+import base64
+import zlib
 import xdis
 import io
 
@@ -23,14 +25,35 @@ def Deobf(comp: xdis.Code3, xor_table: list) -> str:
   
   return decrypted
 
+def Method2(loadedPyc: xdis.Code3, version: tuple[int, int]) -> dict:
+  webhook = base64.b64decode(zlib.decompress(loadedPyc.co_consts[3])).decode()
+  
+  config = [webhook]
+  
+  pycObject = xdis.Bytecode(loadedPyc, xdis.get_opcode(version, False))
+  
+  insts = pycObject.get_instructions(loadedPyc)
+  
+  config.extend(inst.argval for inst in insts if inst.opname == 'LOAD_CONST' and isinstance(inst.argval, bool))
+  
+  __CONFIG__ = {
+    'antidebug': config[1],
+    'browsers': config[2],
+    'discordtoken': config[3],
+    'startup': config[4],
+    'systeminfo': config[5],
+  }
+  
+  return {'webhooks': [config[0]], 'config': __CONFIG__}
 
-def Extract(loadedPyc: xdis.Code3, version: tuple[int, int]) -> dict:
+def Method1(loadedPyc: xdis.Code3, version: tuple[int, int]) -> dict:
   
   xor_table = []
   
   pycObject = xdis.Bytecode(loadedPyc, xdis.get_opcode(version, False))
 
   insts = pycObject.get_instructions(loadedPyc)
+  
   
   # Extract The Xor Table
   for inst in insts:
@@ -55,7 +78,7 @@ def Extract(loadedPyc: xdis.Code3, version: tuple[int, int]) -> dict:
     'systeminfo': config[5],
   }
   
-  return {'webhook': [config[0]], 'config': __CONFIG__}
+  return {'webhooks': [config[0]], 'config': __CONFIG__}
 
 def main(file: classes.Stub) -> list[str] | list[None]:
   
@@ -72,4 +95,7 @@ def main(file: classes.Stub) -> list[str] | list[None]:
   pycTuple = utils.loadPyc(config, file.version)
   loaded = pycTuple[0]
   
-  return Extract(loaded, file.version)
+  if b'zlib' in config:
+    return Method2(loaded, file.version)
+  else:
+    return Method1(loaded, file.version)

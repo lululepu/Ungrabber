@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ungrabber',
-    version='0.0.6',
+    version='0.0.7',
     license='MIT',
     description='Ungrabber is a python module to automatically decompile and get the C2/Type of almost every known python grabbers',
     long_description=open('README.md').read(),
@@ -12,7 +12,7 @@ setup(
             "ungrab=Ungrabber.cli:ungrab",
         ],
     },
-    install_requires=['xdis', 'cryptography', 'pycryptodome', 'yara-python'],
+    install_requires=['xdis', 'cryptography', 'pycryptodome', 'yara-python', 'fernet'],
     include_package_data=True,
     url='https://github.com/lululepu/Ungrabber',
     author='Lululepu',
