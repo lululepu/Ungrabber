@@ -2,8 +2,14 @@ from .extract import (
   extract
 )
 from .utils import get_version_from_magics
+import importlib.resources
 from typing import *
+import yara
 import io
+import os
+
+file_path = importlib.resources.files('Ungrabber.yara') / 'rules.yar'
+rules = yara.compile(str(file_path))
 
 class Stub:
   """
@@ -51,11 +57,6 @@ class Stub:
     
     if not self.struct:
       self.generateStruct()
-    # self.type = 'BlankGrabber' if 'blank.aes' in self.struct else \
-    #             'LunaGrabberV2' if 'luna.aes' in self.struct or 'bound.luna' in self.struct else \
-    #             'CrealGrabber' if 'Creal' in self.struct or 'creal' in self.struct else \
-    #             'LunaGrabber' if 'main-o' in self.struct else \
-    #             'Pysilon' if 'source_prepared' in self.struct else None
     
     grabber_types: list[tuple[str, list[str], callable]] = [
       ('BlankGrabber', ['blank.aes'], any),
@@ -69,7 +70,6 @@ class Stub:
       return self.type
     
     for filename, content in self.struct.items():
-
       # self.type = 'TrapStealer' if b'python -m pip install crypto' in content and b'requests' in content else \
       #             'ExelaV2' if b'cryptography.hazmat.primitives.ciphers' in content and b'DecryptString' in content else \
       #             'BCStealer' if b'blackcap' in content else \
@@ -82,23 +82,12 @@ class Stub:
       #             'HawkishEyes' if b'Hawkish-Eyes' in content else \
       #             'NiceRAT' if b't.me/NiceRAT' in content else \
       #             'PlainBlankGrabber' if b'Blank Grabber' in content else None
-      grabber_types: list[tuple[str, list[bytes], callable]] = [
-        ('TrapStealer', [b'detect_debugger_timing'], any),
-        ('RedTigerStealer', [b'RedTiger Ste4ler'], any),
-        ('BCStealer', [b'blackcap'], any),
-        ('CStealer', [b'cs.png'], any),
-        ('Pysilon', [b'PySilon'], any),
-        ('ExelaV2', [b'cryptography.hazmat.primitives.ciphers', b'DecryptString'], all),
-        ('Empyrean', [b'__CONFIG__'], any),
-        ('LunaGrabber', [b'tkcolorpickerr'], any),
-        ('HawkishEyes', [b'Hawkish-Eyes'], any),
-        ('NiceRAT', [b't.me/NiceRAT'], any),
-        ('PlainBlankGrabber', [b'Blank Grabber'], any)
-      ]
-      self.type = next((t[0] for t in grabber_types if t[2](s in content for s in t[1])), None)
+      matches = rules.match(data = content)
       
-      if self.type:
+      if matches:
+        self.type = matches[0].rule
         return self.type
+      
 
     self.type = 'Unknown'
     
