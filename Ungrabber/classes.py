@@ -57,10 +57,13 @@ class Stub:
     #             'LunaGrabber' if 'main-o' in self.struct else \
     #             'Pysilon' if 'source_prepared' in self.struct else None
     
-    self.type = 'BlankGrabber' if 'blank.aes' in self.struct else \
-            'CrealGrabber' if 'Creal' in self.struct or 'creal' in self.struct else \
-            'LunaGrabber' if 'main-o' in self.struct else \
-            'Pysilon' if 'source_prepared' in self.struct else None
+    grabber_types: list[tuple[str, list[str], callable]] = [
+      ('BlankGrabber', ['blank.aes'], any),
+      ('CrealGrabber', ['Creal', 'creal'], any),
+      ('LunaGrabber', ['main-o'], any),
+      ('Pysilon', ['source_prepared'], any)
+    ]
+    self.type = next((t[0] for t in grabber_types if t[2](s in self.struct for s in t[1])), None)
 
     if self.type:
       return self.type
@@ -79,18 +82,21 @@ class Stub:
       #             'HawkishEyes' if b'Hawkish-Eyes' in content else \
       #             'NiceRAT' if b't.me/NiceRAT' in content else \
       #             'PlainBlankGrabber' if b'Blank Grabber' in content else None
-      self.type = 'TrapStealer' if b'detect_debugger_timing' in content else \
-            'RedTigerStealer' if b'RedTiger Ste4ler' in content else \
-            'BCStealer' if b'blackcap' in content else \
-            'CStealer' if b'cs.png' in content else \
-            'Pysilon' if b'PySilon' in content else \
-            'ExelaV2' if b'cryptography.hazmat.primitives.ciphers' in content and b'DecryptString' in content else \
-            'Empyrean' if b'__CONFIG__' in content else \
-            'LunaGrabber' if b'tkcolorpickerr' in content else \
-            'HawkishEyes' if b'Hawkish-Eyes' in content else \
-            'NiceRAT' if b't.me/NiceRAT' in content else \
-            'PlainBlankGrabber' if b'Blank Grabber' in content else None
-                  
+      grabber_types: list[tuple[str, list[bytes], callable]] = [
+        ('TrapStealer', [b'detect_debugger_timing'], any),
+        ('RedTigerStealer', [b'RedTiger Ste4ler'], any),
+        ('BCStealer', [b'blackcap'], any),
+        ('CStealer', [b'cs.png'], any),
+        ('Pysilon', [b'PySilon'], any),
+        ('ExelaV2', [b'cryptography.hazmat.primitives.ciphers', b'DecryptString'], all),
+        ('Empyrean', [b'__CONFIG__'], any),
+        ('LunaGrabber', [b'tkcolorpickerr'], any),
+        ('HawkishEyes', [b'Hawkish-Eyes'], any),
+        ('NiceRAT', [b't.me/NiceRAT'], any),
+        ('PlainBlankGrabber', [b'Blank Grabber'], any)
+      ]
+      self.type = next((t[0] for t in grabber_types if t[2](s in content for s in t[1])), None)
+      
       if self.type:
         return self.type
 
