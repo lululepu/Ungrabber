@@ -52,10 +52,13 @@ rule Pysilon
     description = "Detect PySilon"
 
   strings:
-    $a = "PySilon"
-
+    $pys1 = ".pysilon"
+		$pys2 = "\\PySilon.key"
+		$pys3 = "source_prepared"
+    $uac_bypass = "resources.uac_bypass"
+    $discord_token_grabber = "resources.discord_token_grabber"
   condition:
-    $a
+      ($pys1 or $pys2) or $pys3 or ($uac_bypass and $discord_token_grabber)
 }
 
 rule ExelaV2
@@ -125,8 +128,8 @@ rule PlainBlankGrabber
     description = "Detect Plain BlankGrabber"
 
   strings:
-    $a = "Blank Grabber"
+    $ = /b+lank\.aes/
 
   condition:
-    $a
+    all of them
 }
