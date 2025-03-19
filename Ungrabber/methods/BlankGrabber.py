@@ -103,10 +103,13 @@ def main(file: classes.Stub) -> dict:
 
   C2_idx = 0
   for i, v in enumerate(strings):
-    if utils.getWebhooks(v):
+    if isinstance(v, str) and '/webhook' in v:
       C2_idx = i
-  
-  if C2_idx == 0:
+      
+  if not C2_idx:
+    C2_idx = 3
+
+  if not C2_idx:
     raise Exception('Couldn\'t find the C2 index for BlankGrabber (Could be using telegram that is not yet supported)')
 
   # Extract full config (ik that's alot)
