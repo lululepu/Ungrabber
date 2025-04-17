@@ -12,7 +12,7 @@ setup(
             "ungrab=Ungrabber.cli:ungrab",
         ],
     },
-    install_requires=['xdis', 'cryptography', 'pycryptodome', 'yara-python', 'fernet'],
+    install_requires=['xdis', 'cryptography', 'pycryptodome', 'yara-python', 'fernet', 'httpx'],
     include_package_data=True,
     url='https://github.com/lululepu/Ungrabber',
     author='Lululepu',
