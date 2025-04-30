@@ -17,9 +17,11 @@ rule RedTigerStealer
 
   strings:
     $a = "RedTiger Ste4ler"
+    $b = "RedTiger St34l3r"
+
 
   condition:
-    $a
+    any of them
 }
 
 rule BCStealer

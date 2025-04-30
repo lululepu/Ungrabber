@@ -42,17 +42,24 @@ def main(file: classes.Stub) -> dict:
   
   
   loaded = utils.loadPyc(mainPyc, file.version)[0]
-  
+
   # index of const below - 1 = key, - 2 = ciphertext
   
   # Use this const cause its unique
-  try:
-    constIdx = loaded.co_consts.index('RedTiger Ste4ler - github.com/loxy0dev/RedTiger-Tools')
-  except:
+  
+  if 'RedTiger Ste4ler - github.com/loxy0dev/RedTiger-Tools' in loaded.co_consts:
+    const = 'RedTiger Ste4ler - github.com/loxy0dev/RedTiger-Tools'
+    keyIdx = -1
+    ciphertextIdx = -2
+  elif 'RedTiger St34l3r - github.com/loxy0dev/RedTiger-Tools' in loaded.co_consts:
+    const = 'RedTiger St34l3r - github.com/loxy0dev/RedTiger-Tools'
+    keyIdx = -5
+    ciphertextIdx = -6
+  else:
     return {'webhooks': []}
   
-  key = loaded.co_consts[constIdx - 1]
-  ciphertext = loaded.co_consts[constIdx - 2]
-  
+  constIdx = loaded.co_consts.index(const)
+  key = loaded.co_consts[constIdx + keyIdx]
+  ciphertext = loaded.co_consts[constIdx + ciphertextIdx]
 
   return {'webhooks': [Decrypt(ciphertext, key)], 'config': {}}

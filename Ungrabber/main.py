@@ -24,6 +24,9 @@ def getMethod(methodName):
     return getMethod('Any')
   func = getattr(module, 'main', None)
 
+  if not func:
+    raise Exception('Could\'nt find the method for {methodName}, forgot to import in methods/__init__.py ?')
+  
   return func
 
 def loads(buffer: bytes) -> Stub:
