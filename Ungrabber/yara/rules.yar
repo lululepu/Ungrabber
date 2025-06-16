@@ -135,3 +135,15 @@ rule PlainBlankGrabber
   condition:
     all of them
 }
+
+rule BehaviorStealer
+{
+  meta:
+    description = "Detect Behavior Stealer"
+  
+  strings:
+    $a = "Behavior Stealer"
+  
+  condition:
+    $a
+}
