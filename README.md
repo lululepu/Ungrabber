@@ -1,4 +1,4 @@
-# Ungrabber
+f# Ungrabber
 
 [![](https://dcbadge.limes.pink/api/server/https://discord.gg/9kheda3rEZ)](https://discord.gg/9kheda3rEZ)
 
@@ -23,7 +23,7 @@ Ungrabber is a Python module designed for decompiling and extracting C2 (especia
 
 ## Usage
 
-For full documentation, check out our GitBook:
+For full documentation, check out our GitBook (made by nightkikko :3):
 
 [![GitBook](https://img.shields.io/badge/GitBook-Read%20the%20Docs-blue?logo=gitbook)](https://ungrabber.gitbook.io/docs/)
 
