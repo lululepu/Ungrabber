@@ -23,31 +23,9 @@ Ungrabber is a Python module designed for decompiling and extracting C2 (especia
 
 ## Usage
 
-### 1. Direct Decompiling
+For full documentation, check out our GitBook:
 
-Decompile a file and extract its data as a tuple:
-
-```python
-import Ungrabber
-
-result = Ungrabber.decompile("filename")
-print(result)  # The tuple of extracted data
-```
-
-### 2. Load as a Stub Object
-
-Load a file as a stub object for further analysis:
-
-```python
-import Ungrabber
-
-with open("filename", "rb") as f:
-    stub = Ungrabber.load(f)
-
-print(stub)  # The stub object
-```
-
-_Documentation will be added later_
+[![GitBook](https://img.shields.io/badge/GitBook-Read%20the%20Docs-blue?logo=gitbook)](https://ungrabber.gitbook.io/docs/)
 
 ## Contributing
 
