@@ -23,7 +23,7 @@ Ungrabber is a Python module designed for decompiling and extracting C2 (especia
 
 ## Usage
 
-For full documentation, check out our GitBook (made by nightkikko :3):
+For full documentation, check out our GitBook (made by [NightKikko](https://github.com/nightkikko) :3):
 
 [![GitBook](https://img.shields.io/badge/GitBook-Read%20the%20Docs-blue?logo=gitbook)](https://ungrabber.gitbook.io/docs/)
 
