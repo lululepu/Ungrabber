@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import ast
 import base64
 import codecs
@@ -38,8 +39,8 @@ from httpx import AsyncClient, RequestError
 
 from . import regs
 
-LZMASign = b'\xFD\x37\x7A\x58\x5A\x00'
-moduleStartByte = (b'\xE3', b'\x63')
+LZMASign = b"\xfd\x37\x7a\x58\x5a\x00"
+moduleStartByte = (b"\xe3", b"\x63")
 
 versions = {
     (50823, 50823): (2, 0),
@@ -66,15 +67,14 @@ versions = {
     (3550, 3599): (3, 13),  # Supported
     (3600, 3649): (3, 14),  # Supported
     (3650, 3699): (3, 15),
-
 }
-PY310 = b'\x6F\x0D\x0D\x0A' + b'\00' * 12
-PY311 = b'\xA7\x0D\x0D' + b'\x00' * 13
-PY312 = b'\xCB\x0D\x0D\x0A' + b'\00' * 12
-PY313 = b'\xF3\x0D' + b'\00' * 14
+PY310 = b"\x6f\x0d\x0d\x0a" + b"\00" * 12
+PY311 = b"\xa7\x0d\x0d" + b"\x00" * 13
+PY312 = b"\xcb\x0d\x0d\x0a" + b"\00" * 12
+PY313 = b"\xf3\x0d" + b"\00" * 14
 
-CODE_REF = b'\xE3'
-CODE = b'\x63'  # CODE_REF & ~128
+CODE_REF = b"\xe3"
+CODE = b"\x63"  # CODE_REF & ~128
 
 
 def magic_to_int(magic: bytes) -> int:
@@ -144,7 +144,7 @@ def getHeader(pymin: int) -> bytes:
         case 13:
             return PY313
         case _:
-            raise Exception(f'Unsupported version given to function: getHeader')
+            raise Exception(f"Unsupported version given to function: getHeader")
 
 
 def getWebhooks(content) -> list:
@@ -160,13 +160,19 @@ def getWebhooks(content) -> list:
 
     content = str(content)
 
-    encoded = sum([
-        regs.DiscordB64Webhook.findall(content),
-        regs.CanaryB64Webhook.findall(content),
-        regs.PTBB64Webhook.findall(content),
-        regs.DiscordAppB64Webhook.findall(content),
-    ], [])
-    founds = [base64.b64decode(webhook).decode('utf-8', errors='ignore') for webhook in encoded]
+    encoded = sum(
+        [
+            regs.DiscordB64Webhook.findall(content),
+            regs.CanaryB64Webhook.findall(content),
+            regs.PTBB64Webhook.findall(content),
+            regs.DiscordAppB64Webhook.findall(content),
+        ],
+        [],
+    )
+    founds = [
+        base64.b64decode(webhook).decode("utf-8", errors="ignore")
+        for webhook in encoded
+    ]
 
     founds.extend(regs.DiscordWebhook.findall(content))
     return _validate_webhooks(founds)
@@ -187,9 +193,9 @@ def _validate_webhooks(founds: List[str]) -> List[str]:
         try:
             async with AsyncClient() as client:
                 response = await client.get(webhook)
-                return webhook if response.status_code == 200 else ''
+                return webhook if response.status_code == 200 else ""
         except RequestError:
-            return ''
+            return ""
 
     async def _validate_worker() -> List[str]:
         tasks = []
@@ -212,7 +218,8 @@ def getVar(code: str, var: str):
     """
     for node in walk_cache(code):
         if isinstance(node, ast.Assign) and any(
-                isinstance(target, ast.Name) and target.id == var for target in node.targets):
+            isinstance(target, ast.Name) and target.id == var for target in node.targets
+        ):
             return node.value
 
 
@@ -272,9 +279,9 @@ def DetectObfuscator(code: bytes):
     if isinstance(code, str):
         code = code.encode()
 
-    if b'___________' in code:
+    if b"___________" in code:
         if findLZMA(code):
-            return 'BlankObf'
+            return "BlankObf"
 
     return None
 
@@ -289,11 +296,13 @@ def BlankObfV1(code: str) -> str:
     Returns:
         str: `The deobfuscated code`
     """
-    ____ = getVarConst(code, '____')
-    _____ = getVarConst(code, '_____')
-    ______ = getVarConst(code, '______')
-    _______ = getVarConst(code, '_______')
-    deobfuscated = base64.b64decode(codecs.decode(____, 'rot13') + _____ + ______[::-1] + _______)
+    ____ = getVarConst(code, "____")
+    _____ = getVarConst(code, "_____")
+    ______ = getVarConst(code, "______")
+    _______ = getVarConst(code, "_______")
+    deobfuscated = base64.b64decode(
+        codecs.decode(____, "rot13") + _____ + ______[::-1] + _______
+    )
     content = deobfuscated
     return content
 
@@ -334,7 +343,9 @@ def findLZMA(content: bytes) -> bytes:
     return lzma.decompress(LZMASign + content.split(LZMASign)[-1])
 
 
-def loadPyc(pyc: bytes, version: tuple[int, int]) -> tuple[xdis.Code3, tuple[int, int], bool, ModuleType]:
+def loadPyc(
+    pyc: bytes, version: tuple[int, int]
+) -> tuple[xdis.Code3, tuple[int, int], bool, ModuleType]:
     """
     Load Pyc With Header Or Not
 

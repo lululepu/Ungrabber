@@ -1,0 +1,46 @@
+[project]
+name = "ungrabber"
+version = "0.0.7"
+description = "Ungrabber is a python module to automatically decompile and get the C2/Type of almost every known python grabbers"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Lululepu", email = "a.no.qsdf@gmail.com" }
+]
+dependencies = [
+    "cryptography",
+    "fernet",
+    "httpx",
+    "pycmatch",
+    "pycryptodome",
+    "typing-extensions>=4.16.0",
+    "xdis>=6.3.0",
+    "yara-python",
+]
+
+[project.urls]
+Homepage = "https://github.com/lululepu/Ungrabber"
+
+[project.scripts]
+ungrab = "ungrabber.cli:ungrab"
+
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+manifest-path = "PyinstUnpack/Cargo.toml"
+python-source = "src"
+module-name = "pyinst_unpack._native"
+features = ["pyo3/abi3-py310"]
+
+[tool.uv.sources]
+pycmatch = { git = "https://github.com/0p4n1k/PycMatch" }
+
+[dependency-groups]
+dev = [
+    "black>=26.5.1",
+    "maturin>=1.15.0",
+    "setuptools>=84.0.0",
+]

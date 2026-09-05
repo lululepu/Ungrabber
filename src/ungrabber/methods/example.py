@@ -6,10 +6,8 @@ always name the file with the method name the same as the grabber name in the ya
 
 """
 
-from .. import (
-  utils,
-  classes
-)
+from .. import utils, classes
+
 
 def main(file: classes.Stub) -> dict:
-  return {'webhooks': [], 'config': {}}
+    return {"webhooks": [], "config": {}}

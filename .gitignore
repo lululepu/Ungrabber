@@ -1,6 +1,18 @@
-*.exe
-/Ungrabber/methods/__pycache__
-/Ungrabber/__pycache__
+# Rust build artifacts
+/target/
+/PyinstUnpack/target/
+
+# Compiled native extension (never commit, always rebuilt)
+src/pyinst_unpack/*.pyd
+src/pyinst_unpack/*.so
+src/pyinst_unpack/*.dll
+
+# Python
+__pycache__/
 *.pyc
-/build
-/ungrabber.egg-info
+.venv/
+
+# NOTE: src/pyinst_unpack/_native.pyi is intentionally NOT ignored.
+# It is committed and maintained like source code -- regenerate it
+# manually with `maturin generate-stubs --output src` whenever the
+# Rust API changes, then commit the diff.
